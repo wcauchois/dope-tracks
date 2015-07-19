@@ -1,0 +1,4 @@
+{
+  "port": 7775,
+  "mongodb_url": "mongodb://localhost/dope_tracks"
+}

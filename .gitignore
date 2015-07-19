@@ -1,0 +1,5 @@
+*.swp
+config/production.json5
+config/development.json5
+node_modules
+build
