@@ -69,7 +69,7 @@ AppDispatcher.register(function(action) {
       }
       break;
     case ContentItemConstants.ITEM_CREATE:
-      _items.shift(action.item);
+      _items.unshift(action.item);
       ContentItemStore.emitChange();
       break;
     case ContentItemConstants.ITEM_REMOVE:

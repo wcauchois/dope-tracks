@@ -175,7 +175,7 @@ app.post('/item/add', function(req, res) {
     description: req.body.description
   });
   newItem.saveAsync().then(function() {
-    res.send({});
+    res.send(renderItem(newItem));
   }).caught(sendError(res, true));
 });
 

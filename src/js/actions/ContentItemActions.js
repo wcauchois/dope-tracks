@@ -11,10 +11,10 @@ var ContentItemActions = {
   },
 
   addItem: function(item) {
-    services.addItem(item).then(function() {
+    services.addItem(item).then(function(serverItem) {
       AppDispatcher.dispatch({
         actionType: ContentItemConstants.ITEM_CREATE,
-        item: item
+        item: serverItem
       });
     });
   },
