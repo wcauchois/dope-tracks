@@ -7,8 +7,10 @@ var _ = require('lodash'),
     YouTubePlayer = require('./components/YouTubePlayer'),
     ContentItemStore = require('./stores/ContentItemStore'),
     ContentItemActions = require('./actions/ContentItemActions'),
+    LoginButton = require('./components/LoginButton'),
     classNames = require('classnames'),
-    Mousetrap = require('mousetrap');
+    Mousetrap = require('mousetrap'),
+    UserStatus = require('./components/UserStatus');
 
 function getPageState() {
   return {
@@ -34,11 +36,20 @@ var HomePage = React.createClass({
   },
 
   render: function() {
+    var userComponent;
+    if (this.props.loginUser) {
+      userComponent = <UserStatus user={this.props.loginUser} />;
+    } else {
+      userComponent = <LoginButton />;
+    }
     return (
       <div>
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-md-8">
             <h1>Dope Tracks</h1>
+          </div>
+          <div className="col-md-4">
+            {userComponent}
           </div>
         </div>
         <AddContentControl />

@@ -40,7 +40,7 @@ function jsonBody(response) {
 function sendError(res, json) {
   return function(e) {
     var body = json ? {error: e.message} : e.message;
-    res.send(500, body);
+    res.status(500).send(body);
   };
 }
 
@@ -151,12 +151,43 @@ passport.deserializeUser(function(id, done) {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(function(req, res, next) {
+  res.respondWith = function(promise) {
+    promise.then(
+      function() {
+        res.send.apply(res, arguments);
+      },
+      function(e) {
+        res.status(500).send(e.message);
+      }
+    );
+  };
+
+  res.respondWithJson = function(promise) {
+    promise.then(
+      function() {
+        res.send.apply(res, arguments);
+      },
+      function(e) {
+        res.status(500).send({error: true, message: e.message});
+      }
+    );
+  };
+
+  next();
+});
+
 app.get('/auth/twitter', passport.authenticate('twitter'));
 app.get('/auth/twitter/callback',
   passport.authenticate('twitter', {
     successRedirect: '/',
     failureRedirect: '/?login_failure=true'
   }));
+
+app.get('/logout', function(req, res) {
+  req.logout();
+  res.redirect('/');
+});
 
 app.get('/', function(req, res) {
   ContentItem.findAsync({}, null, {sort: {_id: -1}, limit: 10}).then(function(items) {
@@ -183,6 +214,43 @@ app.post('/item/remove', function(req, res) {
   ContentItem.removeAsync({_id: req.body.id}).then(function() {
     res.send({});
   }).caught(sendError(res));
+});
+
+app.get('/soundcloud/search', function(req, res) {
+  var targetUrl = url.format({
+    protocol: 'https',
+    hostname: 'api.soundcloud.com',
+    pathname: '/tracks',
+    query: {
+      client_id: config.soundcloud_id,
+      q: req.query.q
+    }
+  });
+
+  var jsonP = request(targetUrl).then(function(response) {
+    // SoundCloud returns an un-wrapped array, which doesn't parse as JSON off-the-bat.
+    var wrappedBody = util.format('{"result": %s}', response[1]);
+    try {
+      var result = JSON.parse(wrappedBody).result;
+    } catch (e) {
+      throw new Error("Failed to parse response from SoundCloud: " + e.message);
+    }
+
+    return {
+      items: _.map(result, function(item) {
+        return {
+          waveformUrl: item.waveform_url,
+          userName: (item.user && item.user.username),
+          userUrl: (item.user && item.user.permalink_url),
+          id: item.id,
+          url: item.permalink_url,
+          title: item.title
+        };
+      })
+    };
+  });
+
+  res.respondWithJson(jsonP);
 });
 
 app.get('/youtube/search', function(req, res) {
