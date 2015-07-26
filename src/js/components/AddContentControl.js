@@ -1,5 +1,6 @@
 var React = require('react/addons'),
     YouTubeAdderControl = require('./YouTubeAdderControl'),
+    SoundCloudAdderControl = require('./SoundCloudAdderControl'),
     DropdownMenu = require('./DropdownMenu'),
     classNames = require('classnames');
 
@@ -35,10 +36,13 @@ var AddContentControl = React.createClass({
     var dropdownContent = [
       (
         <ul className={classNames({'dropdown-menu': true, 'hidden': this.state.mode !== 'default'})} key='default'>
-          <li><a href="#" onClick={this.switchToMode.bind(this, 'youtube')}>YouTube Video</a></li>
+          <li><a href="#" onClick={this.switchToMode.bind(this, 'youtube')}>YouTube</a></li>
+          <li><a href="#" onClick={this.switchToMode.bind(this, 'soundcloud')}>SoundCloud</a></li>
         </ul>
       ),
       <YouTubeAdderControl hidden={this.state.mode !== 'youtube'} key='youtube'
+        onItemAdded={this.onItemAdded} />,
+      <SoundCloudAdderControl hidden={this.state.mode !== 'soundcloud'} key='soundcloud'
         onItemAdded={this.onItemAdded} />
     ];
 

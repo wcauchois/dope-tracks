@@ -74,7 +74,9 @@ var User = mongoose.model('user', userSchema);
 function renderItem(item) {
   return {
     id: item._id,
+    type: item.type,
     youtube_id: item.youtube_id,
+    soundcloud_id: item.soundcloud_id,
     title: item.title,
     description: item.description
   };
@@ -196,13 +198,21 @@ app.get('/', function(req, res) {
 });
 
 app.post('/item/add', function(req, res) {
-  var newItem = new ContentItem({
-    youtube_id: req.body.youtube_id,
-    title: req.body.title,
-    description: req.body.description,
-    type: 'youtube'
-  });
-  newItem.saveAsync().then(function() {
+  Promise.attempt(function() {
+    if (!req.body.type) {
+      throw new Error("Required parameter: type");
+    }
+
+    return new ContentItem({
+      type: req.body.type,
+      youtube_id: req.body.youtube_id,
+      soundcloud_id: req.body.soundcloud_id,
+      title: req.body.title,
+      description: req.body.description,
+    });
+  }).then(function(newItem) {
+    return newItem.saveAsync();
+  }).then(function(newItem) {
     res.send(renderItem(newItem));
   }).caught(sendError(res, true));
 });

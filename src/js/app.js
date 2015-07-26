@@ -66,14 +66,46 @@ var ContentItem = React.createClass({
   },
 
   render: function() {
+    var itemControl;
+    var siteIconUrl;
+    if (this.props.item.type === 'youtube') {
+      itemControl = <YouTubeContentItem item={this.props.item} />;
+      siteIconUrl = '/images/site-icons/youtube.png';
+    } else if (this.props.item.type === 'soundcloud') {
+      itemControl = <SoundCloudContentItem item={this.props.item} />;
+      siteIconUrl = '/images/site-icons/soundcloud.png';
+    }
+
+
     return (
       <div className="content-item">
         <h4>
+          <img className="site-icon" src={siteIconUrl} />
           {this.props.item.title}
           &nbsp;
           <span className="btn btn-default btn-xs glyphicon glyphicon-trash"
             onClick={this.removeSelf} />
         </h4>
+        {itemControl}
+      </div>
+    );
+  }
+});
+
+var SoundCloudContentItem = React.createClass({
+  render: function() {
+    return (
+      <div>
+        TODO
+      </div>
+    );
+  }
+});
+
+var YouTubeContentItem = React.createClass({
+  render: function() {
+    return (
+      <div>
         <YouTubePlayer videoId={this.props.item.youtube_id}
           itemId={this.props.item.id}
           playing={this.props.item.__playing} />

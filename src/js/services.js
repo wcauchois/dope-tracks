@@ -12,6 +12,10 @@ module.exports = {
 
   removeItem: function(id) {
     return Promise.resolve($.post('/item/remove', {id: id}));
+  },
+
+  soundcloudSearch: function(q) {
+    return Promise.resolve($.getJSON('/soundcloud/search', {q: q}));
   }
 };
 
