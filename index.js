@@ -22,18 +22,12 @@ function clientError(e) {
 }
 
 function jsonBody(response) {
-  return new Promise(function(resolve, reject) {
-    var parsed, err;
-    try {
-      parsed = JSON.parse(response[1]);
-    } catch(e) {
-      err = e;
+  return new Promise(function(resolve) {
+    if (response[0].statusCode < 200 || response[0].statusCode >= 400) {
+      throw new Error("Received status code: " + response[0].statusCode);
     }
-    if (parsed) {
-      resolve(parsed);
-    } else {
-      reject(err);
-    }
+
+    resolve(JSON.parse(response[1]));
   });
 }
 
@@ -48,9 +42,11 @@ mongoose.connect(config.mongodb_url);
 
 var contentItemSchema = mongoose.Schema({
   youtube_id: String,
+  soundcloud_id: String,
   title: String,
   description: String,
-  deleted: Boolean
+  deleted: Boolean,
+  type: String
 });
 
 var userSchema = mongoose.Schema({
@@ -203,7 +199,8 @@ app.post('/item/add', function(req, res) {
   var newItem = new ContentItem({
     youtube_id: req.body.youtube_id,
     title: req.body.title,
-    description: req.body.description
+    description: req.body.description,
+    type: 'youtube'
   });
   newItem.saveAsync().then(function() {
     res.send(renderItem(newItem));
