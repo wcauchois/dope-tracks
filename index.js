@@ -12,7 +12,8 @@ var express = require('express'),
     passport = require('passport'),
     TwitterStrategy = require('passport-twitter').Strategy,
     session = require('express-session'),
-    MongoStore = require('connect-mongo')(session);
+    MongoStore = require('connect-mongo')(session),
+    Map = require('collections/map');
 
 var request = Promise.promisify(require('request'));
 
@@ -46,7 +47,8 @@ var contentItemSchema = mongoose.Schema({
   title: String,
   description: String,
   deleted: Boolean,
-  type: String
+  type: String,
+  user: {type: String, ref: 'user'}
 });
 
 var userSchema = mongoose.Schema({
@@ -71,6 +73,15 @@ var User = mongoose.model('user', userSchema);
   Promise.promisifyAll(model.prototype);
 });
 
+function renderUser(user) {
+  return {
+    id: user._id,
+    user_name: user.user_name,
+    display_name: user.display_name,
+    photo_uri: user.photo_uri
+  };
+}
+
 function renderItem(item) {
   return {
     id: item._id,
@@ -78,7 +89,8 @@ function renderItem(item) {
     youtube_id: item.youtube_id,
     soundcloud_id: item.soundcloud_id,
     title: item.title,
-    description: item.description
+    description: item.description,
+    user: item.userFk && renderUser(item.userFk)
   };
 }
 
@@ -187,8 +199,26 @@ app.get('/logout', function(req, res) {
   res.redirect('/');
 });
 
+function findFeed(criteria) {
+  return ContentItem.findAsync(
+    criteria || {}, null, {sort: {_id: -1}, limit: 10}
+  ).then(function(items) {
+    var userIds = _.chain(items)
+      .map(function(i) { return i.user; })
+      .filter() // Remove null elements
+      .uniq()
+      .value();
+    return User.findAsync({_id: {$in: userIds}}).then(function(users) {
+      var userMap = new Map();
+      _.each(users, function(user) { userMap.set(user.id, user); });
+      _.each(items, function(item) { item.userFk = userMap.get(item.user); });
+      return items;
+    });
+  });
+}
+
 app.get('/', function(req, res) {
-  ContentItem.findAsync({}, null, {sort: {_id: -1}, limit: 10}).then(function(items) {
+  findFeed().then(function(items) {
     var params = {
       contentItems: _.map(items, renderItem),
       loginUser: (req.user || null)
@@ -223,6 +253,7 @@ app.post('/item/remove', function(req, res) {
   }).caught(sendError(res));
 });
 
+// https://developers.soundcloud.com/docs/api/reference#tracks
 app.get('/soundcloud/search', function(req, res) {
   var targetUrl = url.format({
     protocol: 'https',

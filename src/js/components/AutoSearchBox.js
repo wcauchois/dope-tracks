@@ -1,4 +1,3 @@
-
 var React = require('react/addons'),
     _ = require('lodash'),
     classNames = require('classnames');

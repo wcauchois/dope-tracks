@@ -1,4 +1,3 @@
-
 var React = require('react/addons'),
     ContentItemActions = require('../actions/ContentItemActions'),
     ContentItemStore = require('../stores/ContentItemStore');

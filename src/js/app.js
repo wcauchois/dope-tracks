@@ -11,7 +11,8 @@ var _ = require('lodash'),
     classNames = require('classnames'),
     Mousetrap = require('mousetrap'),
     UserStatus = require('./components/UserStatus'),
-    AddContentControl = require('./components/AddContentControl');
+    AddContentControl = require('./components/AddContentControl'),
+    SoundCloudPlayer = require('./components/SoundCloudPlayer');
 
 function getPageState() {
   return {
@@ -76,7 +77,6 @@ var ContentItem = React.createClass({
       siteIconUrl = '/images/site-icons/soundcloud.png';
     }
 
-
     return (
       <div className="content-item">
         <h4>
@@ -96,7 +96,7 @@ var SoundCloudContentItem = React.createClass({
   render: function() {
     return (
       <div>
-        TODO
+        <SoundCloudPlayer soundcloudId={this.props.item.soundcloud_id} />
       </div>
     );
   }
