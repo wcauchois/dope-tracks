@@ -221,7 +221,7 @@ app.get('/', function(req, res) {
   findFeed().then(function(items) {
     var params = {
       contentItems: _.map(items, renderItem),
-      loginUser: (req.user || null)
+      loginUser: (req.user && renderUser(req.user)) || null
     };
     res.render('default', {params: params});
   }).caught(sendError(res));
